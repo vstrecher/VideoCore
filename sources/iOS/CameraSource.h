@@ -121,7 +121,10 @@ namespace videocore { namespace iOS {
         
         /*! Used by Objective-C Device/Interface Orientation Notifications */
         void reorientCamera();
-        
+
+        void requestSnapshot();
+        CGImageRef getSnapshot();
+
     private:
         
         /*! 
@@ -149,6 +152,8 @@ namespace videocore { namespace iOS {
         bool m_torchOn;
         bool m_useInterfaceOrientation;
         bool m_orientationLocked;
+        bool m_snapshotPending;
+        CGImageRef m_snapshot;
 
     };
     

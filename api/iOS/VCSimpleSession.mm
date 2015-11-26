@@ -660,6 +660,29 @@ namespace videocore { namespace simpleApi {
     }
 }
 
+- (void)getCameraSnapshotWithCompletion:(void (^)(UIImage *))completion
+{
+    m_cameraSource->requestSnapshot();
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            NSTimeInterval timeout = [NSDate timeIntervalSinceReferenceDate] + 5;
+            while (!m_cameraSource->getSnapshot()) {
+                [NSThread sleepForTimeInterval:0.1];
+                if ([NSDate timeIntervalSinceReferenceDate] > timeout) {
+                    NSLog(@"Unable to get screenshot!");
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(nil);
+                    });
+                }
+            }
+            UIImage *image = [UIImage imageWithCGImage:m_cameraSource->getSnapshot()];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(image);
+            });
+    });
+}
+
+
 //Set property filter for the new enum + set dynamically the sourceFilter for the video mixer
 - (void)setFilter:(VCFilter)filterToChange {
         NSString *filterName = @"com.videocore.filters.bgra";

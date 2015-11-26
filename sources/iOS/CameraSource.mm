@@ -83,7 +83,9 @@ namespace videocore { namespace iOS {
     m_orientationLocked(false),
     m_torchOn(false),
     m_useInterfaceOrientation(false),
-    m_captureSession(nullptr)
+    m_captureSession(nullptr),
+    m_snapshotPending(false),
+    m_snapshot(nullptr)
     {}
     
     CameraSource::~CameraSource()
@@ -383,6 +385,20 @@ namespace videocore { namespace iOS {
             setTorch(m_torchOn);
         }
     }
+
+    void
+    CameraSource::requestSnapshot()
+    {
+        m_snapshotPending = true;
+        m_snapshot = NULL;
+    }
+
+    CGImageRef
+    CameraSource::getSnapshot()
+    {
+        return m_snapshot;
+    }
+
     void
     CameraSource::setOutput(std::shared_ptr<IOutput> output)
     {
@@ -391,6 +407,29 @@ namespace videocore { namespace iOS {
         //auto mixer = std::static_pointer_cast<IVideoMixer>(output);
         
     }
+
+    // Create a CGImageRef from sample buffer data
+    CGImageRef imageFromSampleBuffer(CVImageBufferRef imageBuffer)
+    {
+        CVPixelBufferLockBaseAddress(imageBuffer,0);        // Lock the image buffer
+
+        uint8_t *baseAddress = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(imageBuffer, 0);   // Get information of the image
+        size_t bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
+        size_t width = CVPixelBufferGetWidth(imageBuffer);
+        size_t height = CVPixelBufferGetHeight(imageBuffer);
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+
+        CGContextRef newContext = CGBitmapContextCreate(baseAddress, width, height, 8, bytesPerRow, colorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst);
+        CGImageRef newImage = CGBitmapContextCreateImage(newContext);
+        CGContextRelease(newContext);
+
+        CGColorSpaceRelease(colorSpace);
+        CVPixelBufferUnlockBaseAddress(imageBuffer,0);
+        /* CVBufferRelease(imageBuffer); */  // do not call this!
+
+        return newImage;
+    }
+
     void
     CameraSource::bufferCaptured(CVPixelBufferRef pixelBufferRef)
     {
@@ -405,7 +444,14 @@ namespace videocore { namespace iOS {
             
             pixelBuffer->setState(kVCPixelBufferStateEnqueued);
             output->pushBuffer((uint8_t*)&pixelBuffer, sizeof(pixelBuffer), md);
-            
+
+            if (m_snapshotPending) {
+                if (m_snapshot) {
+                    CGImageRelease(m_snapshot);
+                }
+                m_snapshot = imageFromSampleBuffer(pixelBufferRef);
+                m_snapshotPending = false;
+            }
         }
     }
     
