@@ -123,6 +123,7 @@ namespace videocore { namespace iOS {
         void reorientCamera();
 
         void requestSnapshot();
+        void cancelSnapshotRequest();
         CGImageRef getSnapshot();
 
     private:

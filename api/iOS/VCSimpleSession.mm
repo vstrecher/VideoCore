@@ -670,6 +670,7 @@ namespace videocore { namespace simpleApi {
                 [NSThread sleepForTimeInterval:0.1];
                 if ([NSDate timeIntervalSinceReferenceDate] > timeout) {
                     NSLog(@"Unable to get screenshot!");
+                    m_cameraSource->cancelSnapshotRequest();
                     dispatch_async(dispatch_get_main_queue(), ^{
                         completion(nil);
                     });

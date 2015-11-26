@@ -393,6 +393,12 @@ namespace videocore { namespace iOS {
         m_snapshot = NULL;
     }
 
+    void
+    CameraSource::cancelSnapshotRequest()
+    {
+        m_snapshotPending = false;
+    }
+
     CGImageRef
     CameraSource::getSnapshot()
     {
