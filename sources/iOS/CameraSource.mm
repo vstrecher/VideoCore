@@ -387,22 +387,36 @@ namespace videocore { namespace iOS {
     }
 
     void
-    CameraSource::requestSnapshot()
+    CameraSource::getSnapshot(void (^completion)(CGImageRef))
     {
         m_snapshotPending = true;
+        if (m_snapshot) {
+            CGImageRelease(m_snapshot);
+        }
         m_snapshot = NULL;
-    }
 
-    void
-    CameraSource::cancelSnapshotRequest()
-    {
-        m_snapshotPending = false;
-    }
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            int tries = 0;
 
-    CGImageRef
-    CameraSource::getSnapshot()
-    {
-        return m_snapshot;
+            while (!m_snapshot) {
+                usleep(100000);
+
+                if (tries > 5) {
+                    NSLog(@"Unable to get screenshot!");
+                    m_snapshotPending = false;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(nil);
+                    });
+                    break;
+                }
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(m_snapshot);
+
+                CGImageRelease(m_snapshot);
+                m_snapshot = NULL;
+            });
+        });
     }
 
     void
@@ -452,9 +466,6 @@ namespace videocore { namespace iOS {
             output->pushBuffer((uint8_t*)&pixelBuffer, sizeof(pixelBuffer), md);
 
             if (m_snapshotPending) {
-                if (m_snapshot) {
-                    CGImageRelease(m_snapshot);
-                }
                 m_snapshot = imageFromSampleBuffer(pixelBufferRef);
                 m_snapshotPending = false;
             }

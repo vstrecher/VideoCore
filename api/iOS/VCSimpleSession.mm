@@ -263,13 +263,15 @@ namespace videocore { namespace simpleApi {
 }
 - (void) setRtmpSessionState:(VCSessionState)rtmpSessionState
 {
-    _rtmpSessionState = rtmpSessionState;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        // trigger in main thread, avoid autolayout engine exception
-        if(self.delegate) {
-                [self.delegate connectionStatusChanged:rtmpSessionState];
-        }
-    });
+    if (_rtmpSessionState != rtmpSessionState) {
+        _rtmpSessionState = rtmpSessionState;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // trigger in main thread, avoid autolayout engine exception
+            if(self.delegate) {
+                    [self.delegate connectionStatusChanged:rtmpSessionState];
+            }
+        });
+    }
 }
 - (VCSessionState) rtmpSessionState
 {
@@ -662,24 +664,13 @@ namespace videocore { namespace simpleApi {
 
 - (void)getCameraSnapshotWithCompletion:(void (^)(UIImage *))completion
 {
-    m_cameraSource->requestSnapshot();
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            NSTimeInterval timeout = [NSDate timeIntervalSinceReferenceDate] + 5;
-            while (!m_cameraSource->getSnapshot()) {
-                [NSThread sleepForTimeInterval:0.1];
-                if ([NSDate timeIntervalSinceReferenceDate] > timeout) {
-                    NSLog(@"Unable to get screenshot!");
-                    m_cameraSource->cancelSnapshotRequest();
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        completion(nil);
-                    });
-                }
-            }
-            UIImage *image = [UIImage imageWithCGImage:m_cameraSource->getSnapshot()];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completion(image);
-            });
+    m_cameraSource->getSnapshot(^(CGImageRef cgImage) {
+        if (cgImage) {
+            UIImage *image = [UIImage imageWithCGImage:cgImage];
+            completion(image);
+        } else {
+            completion(nil);
+        }
     });
 }
 
