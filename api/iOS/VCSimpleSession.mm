@@ -494,7 +494,7 @@ namespace videocore { namespace simpleApi {
     });
 }
 
-- (void) dealloc
+- (void) free
 {
     [self endRtmpSession];
     m_audioMixer.reset();
@@ -508,7 +508,18 @@ namespace videocore { namespace simpleApi {
     [_previewView release];
     _previewView = nil;
 
+    m_audioMixer = nil;
+    m_videoMixer = nil;
+    m_videoSplit = nil;
+    m_aspectTransform = nil;
+    m_positionTransform = nil;
+    m_micSource = nil;
+    m_cameraSource = nil;
+    m_pbOutput = nil;
+
     dispatch_release(_graphManagementQueue);
+    _graphManagementQueue = nil;
+}
 
     [super dealloc];
 }
