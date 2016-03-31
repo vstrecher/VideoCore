@@ -521,6 +521,24 @@ namespace videocore { namespace simpleApi {
     _graphManagementQueue = nil;
 }
 
+- (void) dealloc
+{
+    [self endRtmpSession];
+    m_audioMixer.reset();
+    m_videoMixer.reset();
+    m_videoSplit.reset();
+    m_aspectTransform.reset();
+    m_positionTransform.reset();
+    m_micSource.reset();
+    m_cameraSource.reset();
+    m_pbOutput.reset();
+    [_previewView release];
+    _previewView = nil;
+
+    if (_graphManagementQueue) {
+        dispatch_release(_graphManagementQueue);
+    }
+
     [super dealloc];
 }
 
@@ -657,7 +675,9 @@ namespace videocore { namespace simpleApi {
 
     m_h264Packetizer.reset();
     m_aacPacketizer.reset();
-    m_videoSplit->removeOutput(m_h264Encoder);
+    if (m_videoSplit) {
+        m_videoSplit->removeOutput(m_h264Encoder);
+    }
     m_h264Encoder.reset();
     m_aacEncoder.reset();
 
@@ -675,14 +695,16 @@ namespace videocore { namespace simpleApi {
 
 - (void)getCameraSnapshotWithCompletion:(void (^)(UIImage *))completion
 {
-    m_cameraSource->getSnapshot(^(CGImageRef cgImage) {
-        if (cgImage) {
-            UIImage *image = [UIImage imageWithCGImage:cgImage];
-            completion(image);
-        } else {
-            completion(nil);
-        }
-    });
+    if (m_cameraSource) {
+        m_cameraSource->getSnapshot(^(CGImageRef cgImage) {
+            if (cgImage) {
+                UIImage *image = [UIImage imageWithCGImage:cgImage];
+                completion(image);
+            } else {
+                completion(nil);
+            }
+        });
+    }
 }
 
 

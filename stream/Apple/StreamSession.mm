@@ -205,12 +205,13 @@ namespace videocore {
             }
             if(event & NSStreamEventErrorOccurred) {
                 setStatus(kStreamStatusErrorEncountered, true);
-                if (NSIS(m_inputStream).streamError) {
-                    NSLog(@"Input stream error:%@", NSIS(m_inputStream).streamError);
-                }
-                if (NSOS(m_outputStream).streamError) {
-                    NSLog(@"Output stream error:%@", NSIS(m_outputStream).streamError);
-                }
+                //TODO: тут падает при переключении с WiFi на 3G – убрал :(
+                //if (NSIS(m_inputStream).streamError) {
+                //    NSLog(@"Input stream error:%@", NSIS(m_inputStream).streamError);
+                //}
+                //if (NSOS(m_outputStream).streamError) {
+                //    NSLog(@"Output stream error:%@", NSIS(m_outputStream).streamError);
+                //}
             }
         }
         
