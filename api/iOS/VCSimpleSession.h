@@ -135,6 +135,14 @@ typedef NS_ENUM(NSInteger, VCFilter) {
                         aspectMode:(VCAspectMode) aspectMode;
 
 // -----------------------------------------------------------------------------
+- (instancetype) initWithVideoSize:(CGSize)videoSize
+                         frameRate:(int)fps
+                           bitrate:(int)bps
+                  forceOrientation:(int)orientation
+                       cameraState:(VCCameraState) cameraState
+                        aspectMode:(VCAspectMode) aspectMode;
+
+// -----------------------------------------------------------------------------
 
 - (void) startRtmpSessionWithURL:(NSString*) rtmpUrl
                     andStreamKey:(NSString*) streamKey;

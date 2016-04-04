@@ -31,6 +31,7 @@
 #import <UIKit/UIKit.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#import "CameraSource.h"
 
 #define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
 
@@ -81,6 +82,7 @@ namespace videocore { namespace iOS {
     m_previewLayer(nullptr),
     m_matrix(glm::mat4(1.f)),
     m_orientationLocked(false),
+    m_forcedOrientation(UIInterfaceOrientationUnknown),
     m_torchOn(false),
     m_useInterfaceOrientation(false),
     m_captureSession(nullptr),
@@ -249,6 +251,11 @@ namespace videocore { namespace iOS {
     {
         m_orientationLocked = orientationLocked;
     }
+    void
+    CameraSource::setOrientation(int forcedOrientation)
+    {
+        m_forcedOrientation = forcedOrientation;
+    }
     bool
     CameraSource::setTorch(bool torchOn)
     {
@@ -330,11 +337,16 @@ namespace videocore { namespace iOS {
     {
         if(!m_captureSession) return;
         
-        auto orientation = m_useInterfaceOrientation ? [[UIApplication sharedApplication] statusBarOrientation] : [[UIDevice currentDevice] orientation];
-        
-        // use interface orientation as fallback if device orientation is facedown, faceup or unknown
-        if(orientation==UIDeviceOrientationFaceDown || orientation==UIDeviceOrientationFaceUp || orientation==UIDeviceOrientationUnknown) {
-            orientation =[[UIApplication sharedApplication] statusBarOrientation];
+        int orientation;
+        if (m_forcedOrientation == UIInterfaceOrientationUnknown) {
+            orientation = m_useInterfaceOrientation ? [[UIApplication sharedApplication] statusBarOrientation] : [[UIDevice currentDevice] orientation];
+
+            // use interface orientation as fallback if device orientation is facedown, faceup or unknown
+            if (orientation == UIDeviceOrientationFaceDown || orientation == UIDeviceOrientationFaceUp || orientation == UIDeviceOrientationUnknown) {
+                orientation = [[UIApplication sharedApplication] statusBarOrientation];
+            }
+        } else {
+            orientation = m_forcedOrientation;
         }
         
         //bool reorient = false;

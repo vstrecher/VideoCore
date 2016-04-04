@@ -90,6 +90,8 @@ namespace videocore { namespace iOS {
          *  \param orientationLocked  Bool indicating whether to lock the orientation.
          */
         void setOrientationLocked(bool orientationLocked);
+
+        void setOrientation(int forcedOrientation);
         
         /*!
          *  Attempt to turn the torch mode on or off.
@@ -151,6 +153,7 @@ namespace videocore { namespace iOS {
         bool m_torchOn;
         bool m_useInterfaceOrientation;
         bool m_orientationLocked;
+        int m_forcedOrientation;
         bool m_snapshotPending;
         CGImageRef m_snapshot;
 

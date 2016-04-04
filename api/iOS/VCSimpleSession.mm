@@ -136,6 +136,7 @@ namespace videocore { namespace simpleApi {
     VCAspectMode _aspectMode;
     VCSessionState _rtmpSessionState;
     BOOL   _orientationLocked;
+    int    _forcedOrientation;
     BOOL   _torch;
 
     BOOL _useAdaptiveBitrate;
@@ -453,6 +454,27 @@ namespace videocore { namespace simpleApi {
                               frameRate:fps
                                 bitrate:bps
                 useInterfaceOrientation:useInterfaceOrientation
+                            cameraState:cameraState
+                             aspectMode:aspectMode];
+    }
+    return self;
+}
+
+- (instancetype) initWithVideoSize:(CGSize)videoSize
+                         frameRate:(int)fps
+                           bitrate:(int)bps
+                  forceOrientation:(int)orientation
+                       cameraState:(VCCameraState) cameraState
+                        aspectMode:(VCAspectMode) aspectMode
+{
+    if (( self = [super init] ))
+    {
+        _forcedOrientation = orientation;
+
+        [self initInternalWithVideoSize:videoSize
+                              frameRate:fps
+                                bitrate:bps
+                useInterfaceOrientation:YES
                             cameraState:cameraState
                              aspectMode:aspectMode];
     }
@@ -805,6 +827,7 @@ namespace videocore { namespace simpleApi {
         // Add camera source
         m_cameraSource = std::make_shared<videocore::iOS::CameraSource>();
         m_cameraSource->setOrientationLocked(self.orientationLocked);
+        m_cameraSource->setOrientation(_forcedOrientation);
         auto aspectTransform = std::make_shared<videocore::AspectTransform>(self.videoSize.width,self.videoSize.height,m_aspectMode);
 
         auto positionTransform = std::make_shared<videocore::PositionTransform>(self.videoSize.width/2, self.videoSize.height/2,
