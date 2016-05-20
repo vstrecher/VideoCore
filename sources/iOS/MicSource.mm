@@ -84,7 +84,7 @@ static OSStatus handleInputBuffer(void *inRefCon,
 namespace videocore { namespace iOS {
 
     MicSource::MicSource(double sampleRate, int channelCount, std::function<void(AudioUnit&)> excludeAudioUnit)
-    : m_sampleRate(sampleRate), m_channelCount(channelCount), m_audioUnit(nullptr), m_component(nullptr)
+    : m_sampleRate(sampleRate), m_channelCount(channelCount), m_audioUnit(nullptr), m_component(nullptr), m_extraInputCallbackBlock(NULL)
     {
         
 
@@ -165,7 +165,7 @@ namespace videocore { namespace iOS {
             AudioOutputUnitStop(m_audioUnit);
             AudioComponentInstanceDispose(m_audioUnit);
         }
-        
+        m_extraInputCallbackBlock = NULL;
     }
     void
     MicSource::inputCallback(uint8_t *data, size_t data_size, int inNumberFrames)

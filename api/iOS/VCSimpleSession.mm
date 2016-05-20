@@ -174,7 +174,7 @@ namespace videocore { namespace simpleApi {
 - (void)setInputCallbackBlock:(InputCallbackBlock)inputCallbackBlock
 {
     if (m_micSource) {
-        m_micSource->setExtraInputCallbackBlock(inputCallbackBlock);
+        m_micSource->setExtraInputCallbackBlock([inputCallbackBlock copy]);
     }
 }
 
@@ -903,9 +903,11 @@ namespace videocore { namespace simpleApi {
         m_micSource = std::make_shared<videocore::iOS::MicSource>(self.audioSampleRate, self.audioChannelCount);
         m_micSource->setOutput(m_audioMixer);
 
-        if ([_delegate respondsToSelector:@selector(didAddMicSource:)]) {
-            [_delegate didAddMicSource:self];
-        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([_delegate respondsToSelector:@selector(didAddMicSource:)]) {
+                [_delegate didAddMicSource:self];
+            }
+        });
 
         const auto epoch = std::chrono::steady_clock::now();
 
