@@ -33,6 +33,8 @@
 
 #import <Foundation/Foundation.h>
 
+typedef void (^InputCallbackBlock)(uint8_t* data, size_t data_size, int inNumberFrames);
+
 @class InterruptionHandler;
 
 namespace videocore { namespace iOS {
@@ -79,6 +81,10 @@ namespace videocore { namespace iOS {
          */
         const AudioUnit& audioUnit() const { return m_audioUnit; };
 
+        void setExtraInputCallbackBlock(InputCallbackBlock callbackBlock);
+        void setInputGain(Float32 inputGain);
+        Float32 getInputGain();
+
     private:
 
         InterruptionHandler*   m_interruptionHandler;
@@ -88,6 +94,8 @@ namespace videocore { namespace iOS {
 
         double m_sampleRate;
         int m_channelCount;
+
+        InputCallbackBlock m_extraInputCallbackBlock;
 
         std::weak_ptr<IOutput> m_output;
 

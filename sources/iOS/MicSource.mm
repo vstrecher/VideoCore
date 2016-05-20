@@ -186,6 +186,10 @@ namespace videocore { namespace iOS {
             
             output->pushBuffer(data, data_size, md);
         }
+
+        if (m_extraInputCallbackBlock) {
+            m_extraInputCallbackBlock(data, data_size, inNumberFrames);
+        }
     }
     void
     MicSource::interruptionBegan() {
@@ -202,6 +206,40 @@ namespace videocore { namespace iOS {
         m_output = output;
         auto mixer = std::dynamic_pointer_cast<IAudioMixer>(output);
         mixer->registerSource(shared_from_this());
+    }
+
+    void
+    MicSource::setExtraInputCallbackBlock(InputCallbackBlock callbackBlock) {
+        m_extraInputCallbackBlock = callbackBlock;
+    }
+
+    void
+    MicSource::setInputGain(Float32 inputGain) {
+        UInt32 ui32propSize = sizeof(UInt32);
+        UInt32 f32propSize = sizeof(Float32);
+        UInt32 inputGainAvailable = 0;
+
+        OSStatus err = AudioSessionGetProperty(kAudioSessionProperty_InputGainAvailable, &ui32propSize, &inputGainAvailable);
+
+        if (inputGainAvailable) {
+            err = AudioSessionSetProperty(kAudioSessionProperty_InputGainScalar, sizeof(inputGain), &inputGain);
+        } else {
+            NSLog(@"Cannot set input gain");
+        }
+        err = AudioSessionGetProperty(kAudioSessionProperty_InputGainScalar, &f32propSize, &inputGain);
+        NSLog(@"InputGain: %0.2f",inputGain);
+    }
+
+    Float32
+    MicSource::getInputGain() {
+        UInt32 ui32propSize = sizeof(UInt32);
+        UInt32 f32propSize = sizeof(Float32);
+        Float32 inputGain;
+
+        OSStatus err = AudioSessionGetProperty(kAudioSessionProperty_InputGainScalar, &f32propSize, &inputGain);
+        NSLog(@"InputGain: %0.2f",inputGain);
+
+        return inputGain;
     }
 }
 }

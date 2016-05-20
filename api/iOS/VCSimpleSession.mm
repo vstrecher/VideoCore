@@ -56,6 +56,7 @@
 
 
 #include <sstream>
+#import "VCSimpleSession.h"
 
 
 static const int kMinVideoBitrate = 32000;
@@ -146,10 +147,52 @@ namespace videocore { namespace simpleApi {
     CGPoint _exposurePOI;
     
     VCFilter _filter;
+
+    MicSourceWrapper *_micSourceWrapper;
 }
 @property (nonatomic, readwrite) VCSessionState rtmpSessionState;
 
 - (void) setupGraph;
+
+@end
+
+
+@implementation MicSourceWrapper : NSObject
+{
+    std::shared_ptr<videocore::iOS::MicSource> m_micSource;
+}
+
+- (instancetype)initWithCPPMicSource:(std::shared_ptr<videocore::iOS::MicSource>)micSource
+{
+    self = [super init];
+    if (self) {
+        m_micSource = micSource;
+    }
+    return self;
+}
+
+- (void)setInputCallbackBlock:(InputCallbackBlock)inputCallbackBlock
+{
+    if (m_micSource) {
+        m_micSource->setExtraInputCallbackBlock(inputCallbackBlock);
+    }
+}
+
+- (void)setInputGain:(float)gain
+{
+    if (m_micSource) {
+        m_micSource->setInputGain((Float32) gain);
+    }
+}
+
+- (float)inputGain
+{
+    if (m_micSource) {
+        return (float) m_micSource->getInputGain();
+    } else {
+        return 0;
+    }
+}
 
 @end
 
@@ -860,6 +903,10 @@ namespace videocore { namespace simpleApi {
         m_micSource = std::make_shared<videocore::iOS::MicSource>(self.audioSampleRate, self.audioChannelCount);
         m_micSource->setOutput(m_audioMixer);
 
+        if ([_delegate respondsToSelector:@selector(didAddMicSource:)]) {
+            [_delegate didAddMicSource:self];
+        }
+
         const auto epoch = std::chrono::steady_clock::now();
 
         m_audioMixer->setEpoch(epoch);
@@ -970,4 +1017,13 @@ namespace videocore { namespace simpleApi {
     NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
     return basePath;
 }
+
+- (MicSourceWrapper *)micSource
+{
+    if (!_micSourceWrapper) {
+        _micSourceWrapper = [[MicSourceWrapper alloc] initWithCPPMicSource:m_micSource];
+    }
+    return _micSourceWrapper;
+}
+
 @end

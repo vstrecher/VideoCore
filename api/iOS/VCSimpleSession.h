@@ -35,6 +35,7 @@
 #import <UIKit/UIKit.h>
 
 @class VCSimpleSession;
+@class MicSourceWrapper;
 
 typedef NS_ENUM(NSInteger, VCSessionState)
 {
@@ -74,6 +75,7 @@ typedef NS_ENUM(NSInteger, VCFilter) {
 - (void) connectionStatusChanged: (VCSessionState) sessionState;
 @optional
 - (void) didAddCameraSource:(VCSimpleSession*)session;
+- (void) didAddMicSource:(VCSimpleSession*)session;
 
 - (void) detectedThroughput: (NSInteger) throughputInBytesPerSecond; //Depreciated, should use method below
 - (void) detectedThroughput: (NSInteger) throughputInBytesPerSecond videoRate:(NSInteger) rate;
@@ -107,6 +109,8 @@ typedef NS_ENUM(NSInteger, VCFilter) {
 @property (nonatomic, assign) VCFilter      filter; /* Default is VCFilterNormal*/
 
 @property (nonatomic, assign) id<VCSessionDelegate> delegate;
+
+@property (nonatomic, readonly) MicSourceWrapper *micSource;
 
 // -----------------------------------------------------------------------------
 - (instancetype) initWithVideoSize:(CGSize)videoSize
@@ -165,4 +169,9 @@ typedef NS_ENUM(NSInteger, VCFilter) {
 
 - (void) free;
 
+@end
+
+@interface MicSourceWrapper : NSObject
+@property (nonatomic) void (^inputCallbackBlock)(uint8_t* data, size_t data_size, int inNumberFrames);
+@property (nonatomic) float inputGain;
 @end
