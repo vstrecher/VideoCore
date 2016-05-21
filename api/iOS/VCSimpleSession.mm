@@ -309,12 +309,19 @@ namespace videocore { namespace simpleApi {
 {
     if (_rtmpSessionState != rtmpSessionState) {
         _rtmpSessionState = rtmpSessionState;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // trigger in main thread, avoid autolayout engine exception
-            if(self.delegate) {
+
+        // trigger in main thread, avoid autolayout engine exception
+        if (NSOperationQueue.currentQueue != NSOperationQueue.mainQueue) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (self.delegate) {
                     [self.delegate connectionStatusChanged:rtmpSessionState];
+                }
+            });
+        } else {
+            if (self.delegate) {
+                [self.delegate connectionStatusChanged:rtmpSessionState];
             }
-        });
+        }
     }
 }
 - (VCSessionState) rtmpSessionState
