@@ -165,6 +165,9 @@ namespace videocore { namespace iOS {
             AudioOutputUnitStop(m_audioUnit);
             AudioComponentInstanceDispose(m_audioUnit);
         }
+
+        NSLog(@"MicSource dealloc");
+
         m_extraInputCallbackBlock = NULL;
     }
     void

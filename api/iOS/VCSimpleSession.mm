@@ -568,13 +568,18 @@ namespace videocore { namespace simpleApi {
 
 - (void) free
 {
+    NSLog(@"Freeing VCSimpleSession");
+
     [self endRtmpSession];
     m_audioMixer.reset();
     m_videoMixer.reset();
     m_videoSplit.reset();
     m_aspectTransform.reset();
     m_positionTransform.reset();
-    m_micSource.reset();
+    if (m_micSource) {
+        m_micSource->setExtraInputCallbackBlock(NULL);
+        m_micSource.reset();
+    }
     m_cameraSource.reset();
     m_pbOutput.reset();
     [_previewView release];
@@ -595,13 +600,18 @@ namespace videocore { namespace simpleApi {
 
 - (void) dealloc
 {
+    NSLog(@"VCSimpleSession dealloc");
+
     [self endRtmpSession];
     m_audioMixer.reset();
     m_videoMixer.reset();
     m_videoSplit.reset();
     m_aspectTransform.reset();
     m_positionTransform.reset();
-    m_micSource.reset();
+    if (m_micSource) {
+        m_micSource->setExtraInputCallbackBlock(NULL);
+        m_micSource.reset();
+    }
     m_cameraSource.reset();
     m_pbOutput.reset();
     [_previewView release];
