@@ -83,7 +83,17 @@ static OSStatus handleInputBuffer(void *inRefCon,
 
 namespace videocore { namespace iOS {
 
-    MicSource::MicSource(double sampleRate, int channelCount, std::function<void(AudioUnit&)> excludeAudioUnit)
+    void disableiOSAudioProcessing()
+    {
+        NSError *error;
+        BOOL success = [[AVAudioSession sharedInstance] setMode:AVAudioSessionModeMeasurement error:&error];
+        if (!success) {
+            NSLog(@"Unable to disable iOS sound input processing: %@", error);
+        }
+    }
+
+
+MicSource::MicSource(double sampleRate, int channelCount, std::function<void(AudioUnit&)> excludeAudioUnit)
     : m_sampleRate(sampleRate), m_channelCount(channelCount), m_audioUnit(nullptr), m_component(nullptr), m_extraInputCallbackBlock(NULL)
     {
         
@@ -97,7 +107,12 @@ namespace videocore { namespace iOS {
 
                 [session setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker | AVAudioSessionCategoryOptionMixWithOthers error:nil];
                 //[session setMode:AVAudioSessionModeVideoChat error:nil];
+
+                disableiOSAudioProcessing();
+
                 [session setActive:YES error:nil];
+
+                NSLog(@"Audio session mode: %@",[AVAudioSession sharedInstance].mode);
                 
                 AudioComponentDescription acd;
                 acd.componentType = kAudioUnitType_Output;
