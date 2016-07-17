@@ -194,6 +194,11 @@ namespace videocore { namespace simpleApi {
     }
 }
 
++ (BOOL)isInputGainSettable
+{
+    return [AVAudioSession sharedInstance].isInputGainSettable;
+}
+
 @end
 
 @implementation VCSimpleSession
@@ -373,8 +378,8 @@ namespace videocore { namespace simpleApi {
 {
     if(m_audioMixer) {
         m_audioMixer->setSourceGain(m_micSource, micGain);
-        _micGain = micGain;
     }
+    _micGain = micGain;
 }
 - (float) micGain
 {

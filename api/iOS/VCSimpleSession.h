@@ -174,4 +174,5 @@ typedef NS_ENUM(NSInteger, VCFilter) {
 @interface MicSourceWrapper : NSObject
 @property (nonatomic, copy) void (^inputCallbackBlock)(uint8_t* data, size_t data_size, int inNumberFrames);
 @property (nonatomic) float inputGain;
++(BOOL) isInputGainSettable;
 @end

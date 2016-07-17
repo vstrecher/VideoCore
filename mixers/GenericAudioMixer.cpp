@@ -380,7 +380,7 @@ namespace videocore {
         if(s) {
             auto hash = std::hash<std::shared_ptr<ISource>>()(s);
             
-            gain = std::max(0.f, std::min(1.f, gain));
+            gain = std::max(0.f, std::min(2.f, gain));
             gain = powf(gain, kE);
             m_inGain[hash] = gain;
 

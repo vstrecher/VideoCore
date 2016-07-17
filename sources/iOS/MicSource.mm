@@ -233,31 +233,23 @@ MicSource::MicSource(double sampleRate, int channelCount, std::function<void(Aud
 
     void
     MicSource::setInputGain(Float32 inputGain) {
-        UInt32 ui32propSize = sizeof(UInt32);
-        UInt32 f32propSize = sizeof(Float32);
-        UInt32 inputGainAvailable = 0;
 
-        OSStatus err = AudioSessionGetProperty(kAudioSessionProperty_InputGainAvailable, &ui32propSize, &inputGainAvailable);
+        NSLog(@"Setting input gain %lf", inputGain);
 
-        if (inputGainAvailable) {
-            err = AudioSessionSetProperty(kAudioSessionProperty_InputGainScalar, sizeof(inputGain), &inputGain);
+        NSError* error;
+        if ([AVAudioSession sharedInstance].isInputGainSettable) {
+            BOOL success = [[AVAudioSession sharedInstance] setInputGain:inputGain error:&error];
+            if (!success) {
+                NSLog(@"Cannot set input gain %lf: %@", inputGain, error);
+            }
         } else {
-            NSLog(@"Cannot set input gain");
+            NSLog(@"Input gain is not settable");
         }
-        err = AudioSessionGetProperty(kAudioSessionProperty_InputGainScalar, &f32propSize, &inputGain);
-        NSLog(@"InputGain: %0.2f",inputGain);
     }
 
     Float32
     MicSource::getInputGain() {
-        UInt32 ui32propSize = sizeof(UInt32);
-        UInt32 f32propSize = sizeof(Float32);
-        Float32 inputGain;
-
-        OSStatus err = AudioSessionGetProperty(kAudioSessionProperty_InputGainScalar, &f32propSize, &inputGain);
-        NSLog(@"InputGain: %0.2f",inputGain);
-
-        return inputGain;
+        return [AVAudioSession sharedInstance].inputGain;
     }
 }
 }

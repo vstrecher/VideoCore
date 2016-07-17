@@ -271,6 +271,7 @@
         glDeleteRenderbuffers(1, &_renderBuffer);
     }
     if(_fbo) {
+        //TODO: тут упало с EXC_BAD_ACCESS при сворачивании приложения на экране стрима
         glDeleteFramebuffers(1, &_fbo);
     }
     glGenRenderbuffers(1, &_renderBuffer);
